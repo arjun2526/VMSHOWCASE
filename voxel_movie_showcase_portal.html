@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voxel Movie — Next-Gen Cinema Streaming Hub</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,700&family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- QRCode Library for Instant Mobile Scan -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            voxel: {
+              red: '#E50914',
+              crimson: '#FF1E27',
+              ruby: '#B20710',
+              glow: 'rgba(229, 9, 20, 0.45)',
+              dark: '#050507',
+              card: '#0c0c10',
+              border: 'rgba(255, 30, 39, 0.22)'
+            }
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            display: ['Montserrat', 'sans-serif'],
+            mono: ['Space Grotesk', 'monospace']
+          },
+          boxShadow: {
+            'neon-red': '0 0 35px -5px rgba(229, 9, 20, 0.55)',
+            'neon-strong': '0 0 60px -8px rgba(255, 30, 39, 0.8)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.65)'
+          },
+          backgroundImage: {
+            'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #08080a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2b0b0e;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #E50914;
+    }
+
+    /* Ambient Glow Animations */
+    @keyframes pulseGlow {
+      0%, 100% {
+        opacity: 0.35;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.6;
+        transform: scale(1.08);
+      }
+    }
+    .animate-ambient-glow {
+      animation: pulseGlow 8s ease-in-out infinite;
+    }
+
+    /* Glass card reflection */
+    .glass-card {
+      background: linear-gradient(135deg, rgba(22, 12, 14, 0.7) 0%, rgba(10, 10, 14, 0.85) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 40, 50, 0.2);
+    }
+    .glass-card:hover {
+      border-color: rgba(255, 30, 39, 0.6);
+      box-shadow: 0 0 30px rgba(229, 9, 20, 0.35);
+    }
+
+    /* Glowing border gradient animation */
+    .animated-border {
+      position: relative;
+    }
+    .animated-border::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 1.5px;
+      background: linear-gradient(135deg, #FF1E27, transparent 60%, #B20710);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* Film perforation decorative bar */
+    .film-strip {
+      background-image: radial-gradient(#050507 35%, transparent 36%);
+      background-size: 16px 16px;
+    }
+  </style>
+</head>
+<body class="bg-voxel-dark text-slate-100 font-sans selection:bg-voxel-red selection:text-white min-h-screen relative overflow-x-hidden">
+
+  <!-- Fixed Ambient Background Lights -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[720px] h-[720px] bg-gradient-radial from-red-600/25 via-red-950/15 to-transparent rounded-full blur-3xl animate-ambient-glow"></div>
+    <div class="absolute top-1/2 -left-64 w-[500px] h-[500px] bg-gradient-radial from-voxel-ruby/20 to-transparent rounded-full blur-3xl"></div>
+    <div class="absolute bottom-10 -right-48 w-[600px] h-[600px] bg-gradient-radial from-red-700/15 via-red-950/10 to-transparent rounded-full blur-3xl"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(#1a0507_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-neutral-900/95 border border-voxel-red/70 shadow-neon-red text-white px-5 py-3.5 rounded-xl backdrop-blur-xl">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-voxel-crimson text-lg"></i>
+    <span id="toastMsg" class="text-sm font-medium">Link copied to clipboard!</span>
+  </div>
+
+  <!-- Main Container -->
+  <div class="relative z-10 flex flex-col min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-voxel-dark/80 border-b border-white/5 transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        
+        <!-- Logo Branding -->
+        <a href="#hero" class="flex items-center gap-3 group">
+          <div class="relative w-11 h-11 rounded-xl bg-gradient-to-br from-neutral-900 to-black p-0.5 border border-voxel-red/40 group-hover:border-voxel-crimson transition-all duration-300 shadow-neon-red">
+            <!-- Mini Logo Vector -->
+            <div class="w-full h-full bg-black/90 rounded-[10px] flex items-center justify-center overflow-hidden">
+              <svg viewBox="0 0 100 100" class="w-7 h-7 drop-shadow-[0_0_8px_rgba(229,9,20,0.9)]" fill="none">
+                <path d="M22 25 L40 75 Q48 85 55 75 L78 35 Q82 28 72 28 L64 28 Q56 28 53 36 L46 55 L38 33 Q35 25 26 25 Z" fill="url(#logoGradNav)" />
+                <path d="M28 32 L31 38 M32 42 L35 48 M36 52 L39 58 M40 62 L43 68" stroke="#100203" stroke-width="2.5" stroke-linecap="round"/>
+                <polygon points="48,36 48,50 60,43" fill="#FF1E27" />
+                <defs>
+                  <linearGradient id="logoGradNav" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#FF3B44"/>
+                    <stop offset="100%" stop-color="#99030B"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-display font-black tracking-wider text-xl leading-none text-white flex items-center">
+              VOX<span class="text-voxel-crimson">E</span>L
+            </span>
+            <span class="font-mono text-[9px] uppercase tracking-[0.3em] text-neutral-400 -mt-0.5">M O V I E</span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Items -->
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-300">
+          <a href="#hero" class="hover:text-voxel-crimson transition-colors">Home</a>
+          <a href="#platforms" class="hover:text-voxel-crimson transition-colors flex items-center gap-1.5">
+            <span>Platforms</span>
+            <span class="text-[10px] bg-voxel-red/20 text-voxel-crimson px-1.5 py-0.5 rounded border border-voxel-red/40 font-mono">3 Editions</span>
+          </a>
+          <a href="#features" class="hover:text-voxel-crimson transition-colors">Features</a>
+          <a href="#preview" class="hover:text-voxel-crimson transition-colors">Live Preview</a>
+          <a href="#apk-download" class="hover:text-voxel-crimson transition-colors">Android APK</a>
+        </nav>
+
+        <!-- CTA Launch Menu -->
+        <div class="flex items-center gap-3">
+          <a href="https://arjun2526.github.io/voxel-movies/" target="_blank" rel="noopener noreferrer" 
+            class="hidden sm:inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-200 border border-white/10 hover:border-voxel-red/50 transition-all">
+            <i class="fa-solid fa-desktop text-voxel-crimson"></i>
+            <span>PC Web</span>
+          </a>
+          
+          <a href="#platforms" class="inline-flex items-center gap-2 text-xs font-semibold px-4 py-2.5 rounded-lg bg-gradient-to-r from-voxel-red to-red-700 hover:from-voxel-crimson hover:to-red-600 text-white shadow-neon-red transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+            <i class="fa-solid fa-play text-xs"></i>
+            <span>Launch App</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="hero" class="relative pt-12 pb-20 md:pt-20 md:pb-28 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full flex flex-col items-center text-center">
+      
+      <!-- Top Badge -->
+      <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-red-950/40 border border-voxel-red/40 text-red-300 text-xs sm:text-sm font-medium mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(229,9,20,0.2)]">
+        <span class="flex h-2 w-2 rounded-full bg-voxel-crimson animate-ping"></span>
+        <span class="font-mono tracking-wide">STREAMING REINVENTED</span>
+        <span class="text-neutral-500">•</span>
+        <span class="text-neutral-300">PC / Tablet / Mobile / Android</span>
+      </div>
+
+      <!-- Master Logo Showcase Display -->
+      <div class="relative mb-8 group">
+        <div class="absolute -inset-4 bg-gradient-to-r from-red-600/30 to-rose-700/30 rounded-3xl blur-2xl opacity-75 group-hover:opacity-100 transition-all duration-700"></div>
+        
+        <div class="relative w-36 h-36 sm:w-44 sm:h-44 rounded-3xl bg-neutral-950/90 border-2 border-voxel-red/50 p-4 shadow-neon-strong flex items-center justify-center flex-col overflow-hidden backdrop-blur-xl">
+          <!-- Film Edge Perforation Accents -->
+          <div class="absolute top-0 inset-x-0 h-2 bg-neutral-900 border-b border-red-950/60 flex justify-between px-2">
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+          </div>
+
+          <!-- Hero Icon Logo SVG (Pixel-Matched to provided brand artwork) -->
+          <svg viewBox="0 0 100 100" class="w-24 h-24 sm:w-28 sm:h-28 drop-shadow-[0_4px_16px_rgba(255,30,39,0.8)]" fill="none">
+            <!-- V Ribbons -->
+            <path d="M18 20 L38 82 Q46 94 55 82 L84 32 Q89 22 77 22 L67 22 Q58 22 55 31 L45 55 L36 30 Q33 20 22 20 Z" fill="url(#heroVoxelGrad)" />
+            
+            <!-- Left Perforation Slots -->
+            <g fill="#0b0204" opacity="0.95">
+              <rect x="23" y="27" width="5.5" height="3" rx="0.8" transform="rotate(-62 25 28)" />
+              <rect x="27.5" y="37" width="5.5" height="3" rx="0.8" transform="rotate(-62 29.5 38)" />
+              <rect x="32" y="47" width="5.5" height="3" rx="0.8" transform="rotate(-62 34 48)" />
+              <rect x="36.5" y="57" width="5.5" height="3" rx="0.8" transform="rotate(-62 38.5 58)" />
+              <rect x="41" y="67" width="5.5" height="3" rx="0.8" transform="rotate(-62 43 68)" />
+            </g>
+            
+            <!-- Central Cinema Play Triangle -->
+            <polygon points="48,32 48,50 63,41" fill="#FF1E27" class="filter drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" />
+
+            <!-- Gradient Definition -->
+            <defs>
+              <linearGradient id="heroVoxelGrad" x1="15%" y1="10%" x2="85%" y2="90%">
+                <stop offset="0%" stop-color="#FF242C"/>
+                <stop offset="45%" stop-color="#E50914"/>
+                <stop offset="100%" stop-color="#7A0006"/>
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- Micro Logo Label Below Ribbon -->
+          <div class="mt-1 text-center">
+            <span class="font-display font-black text-sm tracking-widest text-white">VOX<span class="text-voxel-crimson font-mono">E</span>L</span>
+            <div class="font-mono text-[7px] tracking-[0.35em] text-neutral-400">M O V I E</div>
+          </div>
+
+          <div class="absolute bottom-0 inset-x-0 h-2 bg-neutral-900 border-t border-red-950/60 flex justify-between px-2">
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+            <span class="w-1.5 h-1.5 bg-black rounded-sm"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-display font-black tracking-tight text-white max-w-4xl leading-[1.1] mb-6">
+        Stream Cinematic Worlds with 
+        <span class="relative whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-voxel-crimson to-rose-400 drop-shadow-[0_2px_24px_rgba(229,9,20,0.8)]">
+          VOXEL MOVIE
+        </span>
+      </h1>
+
+      <p class="max-w-2xl text-base sm:text-lg text-neutral-300 font-normal leading-relaxed mb-10">
+        Unlimited streaming entertainment optimized for every screen size. Access the high-fidelity desktop hub, the responsive mobile edition, or install the official Android APK directly on your device.
+      </p>
+
+      <!-- Primary Action Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-5 w-full max-w-xl">
+        <a href="#platforms" class="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-3 px-7 py-4 rounded-xl bg-gradient-to-r from-voxel-red to-red-700 hover:from-voxel-crimson hover:to-red-600 text-white font-semibold shadow-neon-strong transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+          <i class="fa-solid fa-compass text-base"></i>
+          <span>Explore All Editions</span>
+        </a>
+
+        <a href="#apk-download" class="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-3 px-7 py-4 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-voxel-red/40 hover:border-voxel-crimson text-white font-semibold backdrop-blur-xl transition-all transform hover:-translate-y-0.5">
+          <i class="fa-brands fa-android text-emerald-400 text-lg"></i>
+          <span>Download Android APK</span>
+        </a>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="mt-16 pt-8 border-t border-white/10 w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+          <div class="text-2xl sm:text-3xl font-display font-bold text-white flex items-center justify-center gap-1">
+            <span>4K</span><span class="text-voxel-crimson text-sm">UHD</span>
+          </div>
+          <div class="text-xs text-neutral-400 font-medium uppercase tracking-wider mt-1">Video Stream</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-display font-bold text-white flex items-center justify-center gap-1">
+            <span>0</span><span class="text-voxel-crimson text-sm">ADS</span>
+          </div>
+          <div class="text-xs text-neutral-400 font-medium uppercase tracking-wider mt-1">Seamless UI</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-display font-bold text-white flex items-center justify-center gap-1">
+            <span>Multi</span><span class="text-voxel-crimson text-sm">SYNC</span>
+          </div>
+          <div class="text-xs text-neutral-400 font-medium uppercase tracking-wider mt-1">Any Device</div>
+        </div>
+        <div>
+          <div class="text-2xl sm:text-3xl font-display font-bold text-white flex items-center justify-center gap-1">
+            <span>Free</span><span class="text-voxel-crimson text-sm">APK</span>
+          </div>
+          <div class="text-xs text-neutral-400 font-medium uppercase tracking-wider mt-1">Android Ready</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLATFORMS & ACCESS SHOWCASE -->
+    <section id="platforms" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full relative">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-mono font-bold uppercase tracking-[0.25em] text-voxel-crimson mb-3">Seamless Access</h2>
+        <h3 class="text-3xl sm:text-4xl lg:text-5xl font-display font-black text-white">Choose Your Streaming Experience</h3>
+        <p class="text-neutral-400 mt-4 text-sm sm:text-base">Optimized interfaces built specifically for wide desktop monitors, tablet layouts, and touch-screen smartphones.</p>
+      </div>
+
+      <!-- Grid of 3 Main Destinations -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- 1. PC & TABLET EDITION CARD -->
+        <div class="glass-card rounded-2xl p-6 sm:p-8 flex flex-col justify-between relative group transition-all duration-300">
+          <div class="absolute top-5 right-5 text-neutral-600 group-hover:text-voxel-crimson transition-colors">
+            <i class="fa-solid fa-laptop text-2xl"></i>
+          </div>
+
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-red-950/60 border border-red-800/40 text-red-300 text-xs font-mono font-semibold mb-4">
+              <i class="fa-solid fa-display"></i>
+              <span>DESKTOP / TABLET</span>
+            </div>
+
+            <h4 class="text-2xl font-display font-bold text-white mb-2 group-hover:text-voxel-crimson transition-colors">
+              Voxel Movie — Web Edition
+            </h4>
+
+            <p class="text-neutral-400 text-sm leading-relaxed mb-6">
+              The full-width cinematic desktop dashboard with immersive movie carousel banners, extensive genre filters, actor highlights, and ultra-wide monitor scaling.
+            </p>
+
+            <!-- Features Pill List -->
+            <div class="space-y-2.5 mb-8">
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-voxel-crimson"></i>
+                <span>Wide Screen Grid & Ultra-HD Player</span>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-voxel-crimson"></i>
+                <span>Keyboard Shortcuts & Fast Search</span>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-voxel-crimson"></i>
+                <span>Tablet-Responsive Touch Controls</span>
+              </div>
+            </div>
+
+            <!-- Link URL snippet -->
+            <div class="p-3 bg-black/60 rounded-xl border border-white/5 font-mono text-xs text-neutral-400 flex items-center justify-between mb-6 group-hover:border-voxel-red/40 transition-colors">
+              <span class="truncate pr-2">arjun2526.github.io/voxel-movies/</span>
+              <button onclick="copyToClipboard('https://arjun2526.github.io/voxel-movies/', 'Desktop Web link copied!')" 
+                class="hover:text-voxel-crimson transition-colors px-2 py-1 bg-white/5 rounded active:scale-95" title="Copy Link">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-3 pt-4 border-t border-white/5">
+            <a href="https://arjun2526.github.io/voxel-movies/" target="_blank" rel="noopener noreferrer" 
+              class="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-voxel-red to-red-700 hover:from-voxel-crimson hover:to-red-600 text-white font-semibold text-sm transition-all shadow-neon-red">
+              <span>Launch Desktop Client</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+            </a>
+            
+            <button onclick="openLivePreview('https://arjun2526.github.io/voxel-movies/', 'Desktop/Tablet Web UI')" 
+              class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-xs font-medium border border-white/5 hover:border-white/20 transition-all">
+              <i class="fa-solid fa-eye text-xs"></i>
+              <span>Live Interactive Preview</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. MOBILE & TABLET MAPP EDITION CARD -->
+        <div class="glass-card rounded-2xl p-6 sm:p-8 flex flex-col justify-between relative group transition-all duration-300 border-voxel-red/50 shadow-neon-red">
+          <!-- Featured Badge -->
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-voxel-crimson text-white text-[10px] font-mono font-bold tracking-widest uppercase px-3 py-1 rounded-full shadow-[0_0_15px_rgba(255,30,39,0.8)]">
+            TOUCH OPTIMIZED
+          </div>
+
+          <div class="absolute top-5 right-5 text-neutral-600 group-hover:text-voxel-crimson transition-colors">
+            <i class="fa-solid fa-mobile-screen-button text-2xl"></i>
+          </div>
+
+          <div class="pt-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-red-950/60 border border-red-800/40 text-red-300 text-xs font-mono font-semibold mb-4">
+              <i class="fa-solid fa-mobile-screen"></i>
+              <span>MOBILE / TABLET MAPP</span>
+            </div>
+
+            <h4 class="text-2xl font-display font-bold text-white mb-2 group-hover:text-voxel-crimson transition-colors">
+              Voxel Movie — MAPP Web App
+            </h4>
+
+            <p class="text-neutral-400 text-sm leading-relaxed mb-6">
+              Tailored specifically for one-handed thumb navigation, fluid swipe gestures, native mobile bottom-bar controls, and instant loading on iOS & Android browsers.
+            </p>
+
+            <!-- Features Pill List -->
+            <div class="space-y-2.5 mb-8">
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-voxel-crimson"></i>
+                <span>Bottom Navigation Bar & Touch Carousels</span>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-voxel-crimson"></i>
+                <span>Lightweight Data Saver Engine</span>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-voxel-crimson"></i>
+                <span>Add to Home Screen (PWA Ready)</span>
+              </div>
+            </div>
+
+            <!-- Link URL snippet -->
+            <div class="p-3 bg-black/60 rounded-xl border border-white/5 font-mono text-xs text-neutral-400 flex items-center justify-between mb-6 group-hover:border-voxel-red/40 transition-colors">
+              <span class="truncate pr-2">arjun2526.github.io/voxel-movies-MAPP/</span>
+              <button onclick="copyToClipboard('https://arjun2526.github.io/voxel-movies-MAPP/', 'Mobile MAPP link copied!')" 
+                class="hover:text-voxel-crimson transition-colors px-2 py-1 bg-white/5 rounded active:scale-95" title="Copy Link">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-3 pt-4 border-t border-white/5">
+            <a href="https://arjun2526.github.io/voxel-movies-MAPP/" target="_blank" rel="noopener noreferrer" 
+              class="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-voxel-red hover:from-voxel-crimson hover:to-red-500 text-white font-semibold text-sm transition-all shadow-neon-red">
+              <span>Launch Mobile App</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+            </a>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="openLivePreview('https://arjun2526.github.io/voxel-movies-MAPP/', 'Mobile Web App UI')" 
+                class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-xs font-medium border border-white/5 hover:border-white/20 transition-all">
+                <i class="fa-solid fa-eye text-xs"></i>
+                <span>Preview</span>
+              </button>
+              
+              <button onclick="showQrModal()" 
+                class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-xs font-medium border border-white/5 hover:border-white/20 transition-all">
+                <i class="fa-solid fa-qrcode text-xs text-voxel-crimson"></i>
+                <span>Scan QR</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ANDROID NATIVE APK EDITION CARD -->
+        <div class="glass-card rounded-2xl p-6 sm:p-8 flex flex-col justify-between relative group transition-all duration-300">
+          <div class="absolute top-5 right-5 text-neutral-600 group-hover:text-emerald-400 transition-colors">
+            <i class="fa-brands fa-android text-2xl"></i>
+          </div>
+
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 text-xs font-mono font-semibold mb-4">
+              <i class="fa-solid fa-download"></i>
+              <span>NATIVE ANDROID APK</span>
+            </div>
+
+            <h4 class="text-2xl font-display font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">
+              Voxel Movie — Android APK
+            </h4>
+
+            <p class="text-neutral-400 text-sm leading-relaxed mb-6">
+              Official native Android installer package (.apk). Enjoy hardware-accelerated playback, offline capabilities, background notifications, and full-screen immersion.
+            </p>
+
+            <!-- Features Pill List -->
+            <div class="space-y-2.5 mb-8">
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-emerald-400"></i>
+                <span>Package: <code class="font-mono text-neutral-200">com.voxel.movies</code></span>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-emerald-400"></i>
+                <span>Android 7.0+ (Nougat through 14+)</span>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-neutral-300">
+                <i class="fa-solid fa-check text-emerald-400"></i>
+                <span>Architecture: arm64-v8a / Universal (~18.4 MB)</span>
+              </div>
+            </div>
+
+            <!-- APK Specs Container -->
+            <div class="p-3 bg-black/60 rounded-xl border border-white/5 text-xs text-neutral-300 flex items-center justify-between mb-6">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="font-mono text-neutral-400">Release v1.0.0 Stable</span>
+              </div>
+              <span class="font-mono text-emerald-400 font-semibold">18.4 MB</span>
+            </div>
+          </div>
+
+          <div class="space-y-3 pt-4 border-t border-white/5">
+            <button onclick="triggerApkDownload()" 
+              class="w-full inline-flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-semibold text-sm transition-all shadow-[0_0_25px_rgba(16,185,129,0.35)]">
+              <i class="fa-solid fa-download text-sm"></i>
+              <span>Download APK File</span>
+            </button>
+            
+            <button onclick="openInstallGuideModal()" 
+              class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-xs font-medium border border-white/5 hover:border-white/20 transition-all">
+              <i class="fa-solid fa-circle-question text-xs"></i>
+              <span>Installation Instructions</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- INTERACTIVE DEVICE PREVIEW & PLAYGROUND SECTION -->
+    <section id="preview" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="glass-card rounded-3xl p-6 sm:p-10 border border-white/10 relative overflow-hidden">
+        
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-8 border-b border-white/10">
+          <div>
+            <div class="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-widest text-voxel-crimson mb-2">
+              <i class="fa-solid fa-sliders"></i>
+              <span>Live Showcase View</span>
+            </div>
+            <h3 class="text-3xl sm:text-4xl font-display font-black text-white">Compare Device Layouts</h3>
+            <p class="text-neutral-400 text-sm mt-1 max-w-xl">
+              Switch between Desktop Mode and Mobile MAPP Mode to experience how the dynamic responsive grid shapes every viewing experience.
+            </p>
+          </div>
+
+          <!-- Switcher Toggle Controls -->
+          <div class="inline-flex p-1.5 rounded-xl bg-black/80 border border-white/10 self-start md:self-auto">
+            <button id="togglePcBtn" onclick="switchPreviewDevice('pc')" 
+              class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-voxel-red text-white shadow-neon-red">
+              <i class="fa-solid fa-desktop"></i>
+              <span>PC / Tablet UI</span>
+            </button>
+            <button id="toggleMobileBtn" onclick="switchPreviewDevice('mobile')" 
+              class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-neutral-400 hover:text-white transition-all">
+              <i class="fa-solid fa-mobile-screen"></i>
+              <span>Mobile MAPP UI</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Device Mockup Display -->
+        <div class="flex justify-center items-center py-6 min-h-[480px]">
+          
+          <!-- DESKTOP MOCKUP -->
+          <div id="pcMockup" class="w-full max-w-4xl transition-all duration-500">
+            <div class="rounded-2xl overflow-hidden border border-white/15 bg-neutral-950 shadow-2xl">
+              <!-- Window Chrome Header -->
+              <div class="h-10 bg-neutral-900 border-b border-white/10 px-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-red-600/80"></span>
+                  <span class="w-3 h-3 rounded-full bg-yellow-600/80"></span>
+                  <span class="w-3 h-3 rounded-full bg-green-600/80"></span>
+                </div>
+                <div class="px-6 py-1 rounded-full bg-black/60 border border-white/10 font-mono text-[11px] text-neutral-400 flex items-center gap-2">
+                  <i class="fa-solid fa-lock text-[9px] text-emerald-400"></i>
+                  <span>https://arjun2526.github.io/voxel-movies/</span>
+                </div>
+                <a href="https://arjun2526.github.io/voxel-movies/" target="_blank" rel="noopener noreferrer" class="text-neutral-400 hover:text-white text-xs">
+                  <i class="fa-solid fa-external-link"></i>
+                </a>
+              </div>
+
+              <!-- Preview Canvas / Content -->
+              <div class="relative bg-gradient-to-b from-neutral-950 to-black p-6 sm:p-8">
+                <!-- Mini Mock Header -->
+                <div class="flex items-center justify-between pb-6 border-b border-white/5 mb-6">
+                  <div class="flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-voxel-red/20 border border-voxel-red flex items-center justify-center font-display font-black text-voxel-crimson text-xs">V</span>
+                    <span class="font-display font-black text-sm tracking-wider">VOXEL MOVIE</span>
+                  </div>
+                  <div class="flex gap-4 text-xs text-neutral-400 font-medium">
+                    <span class="text-white border-b-2 border-voxel-red pb-1">Trending</span>
+                    <span>Movies</span>
+                    <span>TV Shows</span>
+                    <span>Originals</span>
+                  </div>
+                </div>
+
+                <!-- Featured Mock Banner -->
+                <div class="relative h-48 sm:h-64 rounded-xl overflow-hidden mb-6 bg-gradient-to-r from-neutral-900 via-red-950/40 to-neutral-900 border border-white/10 flex items-center px-6 sm:px-10">
+                  <div class="max-w-md z-10">
+                    <span class="inline-block px-2.5 py-0.5 rounded bg-voxel-red text-white text-[10px] font-bold font-mono tracking-wider mb-2">4K CINEMA STREAM</span>
+                    <h4 class="text-xl sm:text-2xl font-display font-extrabold text-white mb-2">Blockbuster Premieres</h4>
+                    <p class="text-xs text-neutral-300 line-clamp-2 mb-4">Discover millions of titles, curated categories, high-bitrate audio, and clean navigation.</p>
+                    <a href="https://arjun2526.github.io/voxel-movies/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-voxel-red text-white text-xs font-bold shadow-neon-red hover:bg-voxel-crimson transition-all">
+                      <i class="fa-solid fa-play text-[10px]"></i> Play Now
+                    </a>
+                  </div>
+                  <div class="absolute right-0 top-0 bottom-0 w-1/2 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-voxel-red/20 via-transparent to-transparent pointer-events-none"></div>
+                </div>
+
+                <!-- Mock Movies Row -->
+                <div>
+                  <div class="flex justify-between items-center mb-3">
+                    <h5 class="text-xs font-bold uppercase tracking-wider text-neutral-300 font-display">Featured Releases</h5>
+                    <span class="text-[11px] text-voxel-crimson hover:underline cursor-pointer">View Catalog &rarr;</span>
+                  </div>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="h-28 rounded-lg bg-neutral-900 border border-white/5 p-3 flex flex-col justify-end relative overflow-hidden group/item hover:border-voxel-red/50 transition-all cursor-pointer">
+                      <span class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></span>
+                      <span class="relative text-xs font-bold text-white">Cyber Void 2099</span>
+                      <span class="relative text-[10px] text-neutral-400">Sci-Fi • 4K</span>
+                    </div>
+                    <div class="h-28 rounded-lg bg-neutral-900 border border-white/5 p-3 flex flex-col justify-end relative overflow-hidden group/item hover:border-voxel-red/50 transition-all cursor-pointer">
+                      <span class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></span>
+                      <span class="relative text-xs font-bold text-white">Crimson Horizon</span>
+                      <span class="relative text-[10px] text-neutral-400">Action • IMAX</span>
+                    </div>
+                    <div class="h-28 rounded-lg bg-neutral-900 border border-white/5 p-3 flex flex-col justify-end relative overflow-hidden group/item hover:border-voxel-red/50 transition-all cursor-pointer">
+                      <span class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></span>
+                      <span class="relative text-xs font-bold text-white">Voxel Dimension</span>
+                      <span class="relative text-[10px] text-neutral-400">Adventure • HDR</span>
+                    </div>
+                    <div class="h-28 rounded-lg bg-neutral-900 border border-white/5 p-3 flex flex-col justify-end relative overflow-hidden group/item hover:border-voxel-red/50 transition-all cursor-pointer">
+                      <span class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></span>
+                      <span class="relative text-xs font-bold text-white">Shadow Protocol</span>
+                      <span class="relative text-[10px] text-neutral-400">Thriller • Dolby</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- MOBILE PHONE MOCKUP -->
+          <div id="mobileMockup" class="hidden w-full max-w-sm transition-all duration-500">
+            <!-- Smartphone Shell Frame -->
+            <div class="w-[300px] sm:w-[320px] mx-auto rounded-[42px] border-4 border-neutral-700 bg-neutral-950 p-3 shadow-2xl shadow-red-950/40 relative">
+              <!-- Camera Punch Hole -->
+              <div class="absolute top-6 left-1/2 -translate-x-1/2 w-16 h-4 bg-black rounded-full z-30 flex items-center justify-center">
+                <span class="w-2.5 h-2.5 rounded-full bg-neutral-900 border border-white/10"></span>
+              </div>
+
+              <!-- Inner Screen -->
+              <div class="w-full h-[540px] rounded-[32px] overflow-hidden bg-black flex flex-col justify-between border border-white/10 relative">
+                
+                <!-- Mobile Status Bar -->
+                <div class="pt-2 px-6 flex justify-between text-[10px] text-neutral-400 font-mono z-20">
+                  <span>9:41</span>
+                  <div class="flex gap-1.5 items-center">
+                    <i class="fa-solid fa-signal text-[9px]"></i>
+                    <i class="fa-solid fa-wifi text-[9px]"></i>
+                    <i class="fa-solid fa-battery-full text-[10px]"></i>
+                  </div>
+                </div>
+
+                <!-- Mobile Top Bar -->
+                <div class="px-4 py-3 flex items-center justify-between border-b border-white/5 z-20 mt-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded bg-voxel-red flex items-center justify-center text-[10px] font-black text-white">V</div>
+                    <span class="font-display font-black text-xs">VOXEL MAPP</span>
+                  </div>
+                  <i class="fa-solid fa-magnifying-glass text-xs text-neutral-400"></i>
+                </div>
+
+                <!-- Scrollable Mobile Content -->
+                <div class="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+                  <!-- Hero Card -->
+                  <div class="h-44 rounded-2xl bg-gradient-to-tr from-neutral-900 via-red-950/50 to-neutral-900 p-4 border border-voxel-red/40 flex flex-col justify-end relative overflow-hidden">
+                    <span class="text-[9px] font-mono font-bold text-voxel-crimson uppercase tracking-wider mb-1">NOW TRENDING</span>
+                    <h5 class="text-base font-display font-black text-white leading-tight">Neon Odyssey</h5>
+                    <p class="text-[10px] text-neutral-400 mt-1 line-clamp-1">Stream in HD with adaptive mobile bandwidth</p>
+                    <div class="mt-2.5">
+                      <a href="https://arjun2526.github.io/voxel-movies-MAPP/" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-voxel-red text-white text-[10px] font-bold">
+                        <i class="fa-solid fa-play text-[8px]"></i> Watch
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- Quick Categories -->
+                  <div class="flex gap-2 overflow-x-auto pb-1 text-[10px] font-medium no-scrollbar">
+                    <span class="px-2.5 py-1 rounded-full bg-voxel-red text-white whitespace-nowrap">All</span>
+                    <span class="px-2.5 py-1 rounded-full bg-neutral-900 text-neutral-400 whitespace-nowrap border border-white/5">Action</span>
+                    <span class="px-2.5 py-1 rounded-full bg-neutral-900 text-neutral-400 whitespace-nowrap border border-white/5">Sci-Fi</span>
+                    <span class="px-2.5 py-1 rounded-full bg-neutral-900 text-neutral-400 whitespace-nowrap border border-white/5">Thriller</span>
+                  </div>
+
+                  <!-- 2-Column Mobile Feed -->
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="h-28 rounded-xl bg-neutral-900 border border-white/5 p-2 flex flex-col justify-end relative">
+                      <span class="text-[10px] font-bold text-white leading-tight">Dark Pulse</span>
+                      <span class="text-[8px] text-neutral-400">Season 1</span>
+                    </div>
+                    <div class="h-28 rounded-xl bg-neutral-900 border border-white/5 p-2 flex flex-col justify-end relative">
+                      <span class="text-[10px] font-bold text-white leading-tight">Matrix City</span>
+                      <span class="text-[8px] text-neutral-400">Movie • 2h 10m</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bottom App Bar Navigation -->
+                <div class="h-14 bg-neutral-950 border-t border-white/10 px-6 flex items-center justify-between text-neutral-400 text-xs z-20">
+                  <span class="text-voxel-crimson flex flex-col items-center gap-0.5">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="text-[9px]">Home</span>
+                  </span>
+                  <span class="flex flex-col items-center gap-0.5 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-fire"></i>
+                    <span class="text-[9px]">Hot</span>
+                  </span>
+                  <span class="flex flex-col items-center gap-0.5 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-bookmark"></i>
+                    <span class="text-[9px]">Saved</span>
+                  </span>
+                  <span class="flex flex-col items-center gap-0.5 hover:text-white cursor-pointer">
+                    <i class="fa-solid fa-user"></i>
+                    <span class="text-[9px]">Profile</span>
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ANDROID APK DEDICATED HUB -->
+    <section id="apk-download" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="relative rounded-3xl bg-gradient-to-b from-neutral-900/90 via-neutral-950 to-black p-8 sm:p-12 border border-emerald-500/30 overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.15)]">
+        
+        <!-- Background Ambient Glow -->
+        <div class="absolute -top-32 -right-32 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          
+          <!-- Left Column Info -->
+          <div class="lg:col-span-7">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-950/70 border border-emerald-500/40 text-emerald-400 text-xs font-mono font-semibold mb-4">
+              <i class="fa-brands fa-android text-sm"></i>
+              <span>STANDALONE APPLICATION (.APK)</span>
+            </div>
+
+            <h3 class="text-3xl sm:text-5xl font-display font-black text-white leading-tight mb-4">
+              Get Voxel Movie for <span class="text-emerald-400">Android</span>
+            </h3>
+
+            <p class="text-neutral-300 text-sm sm:text-base leading-relaxed mb-6">
+              Install the compiled Android APK on your phone, tablet, or Android TV. Experience zero browser chrome, ultra-low latency playback, and direct push alerts for new cinema releases.
+            </p>
+
+            <!-- Specification Badges -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
+              <div class="bg-black/50 p-3 rounded-xl border border-white/5">
+                <div class="text-[11px] text-neutral-400 font-mono">FILE SIZE</div>
+                <div class="text-sm font-bold text-white mt-0.5">18.4 MB</div>
+              </div>
+              <div class="bg-black/50 p-3 rounded-xl border border-white/5">
+                <div class="text-[11px] text-neutral-400 font-mono">PACKAGE NAME</div>
+                <div class="text-xs font-bold text-white mt-0.5 truncate">com.voxel.movies</div>
+              </div>
+              <div class="bg-black/50 p-3 rounded-xl border border-white/5 col-span-2 sm:col-span-1">
+                <div class="text-[11px] text-neutral-400 font-mono">COMPATIBILITY</div>
+                <div class="text-xs font-bold text-emerald-400 mt-0.5">Android 7.0+</div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center gap-4">
+              <button onclick="triggerApkDownload()" 
+                class="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-sm shadow-[0_0_30px_rgba(16,185,129,0.4)] transition-all transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-download text-base"></i>
+                <span>Download VoxelMovie.apk</span>
+              </button>
+
+              <button onclick="openInstallGuideModal()" 
+                class="inline-flex items-center gap-2 px-5 py-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border border-white/10 hover:border-emerald-400/50 text-sm font-semibold transition-all">
+                <i class="fa-solid fa-list-check text-emerald-400"></i>
+                <span>How to Install</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column Card Graphic -->
+          <div class="lg:col-span-5 flex justify-center">
+            <div class="relative w-64 h-64 sm:w-72 sm:h-72 rounded-3xl bg-neutral-950 border border-emerald-500/30 p-6 flex flex-col items-center justify-center text-center shadow-2xl">
+              <!-- Decorative circles -->
+              <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-transparent border border-emerald-500/40 flex items-center justify-center mb-4">
+                <i class="fa-brands fa-android text-5xl text-emerald-400"></i>
+              </div>
+              
+              <h5 class="text-lg font-bold text-white font-display">VoxelMovie v1.0.0</h5>
+              <p class="text-xs text-neutral-400 mt-1">Official Android Release Build</p>
+              
+              <div class="mt-4 flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">
+                <i class="fa-solid fa-shield-halved text-[10px]"></i>
+                <span>Verified Clean & Safe</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- KEY FEATURES GRID -->
+    <section id="features" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-xs font-mono font-bold uppercase tracking-[0.25em] text-voxel-crimson mb-3">Superior Architecture</h2>
+        <h3 class="text-3xl sm:text-4xl lg:text-5xl font-display font-black text-white">Engineered For Cinema Lovers</h3>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div class="glass-card rounded-2xl p-6 hover:border-voxel-red/60 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-red-950/60 border border-voxel-red/40 flex items-center justify-center text-voxel-crimson text-xl mb-5">
+            <i class="fa-solid fa-bolt-lightning"></i>
+          </div>
+          <h4 class="text-lg font-display font-bold text-white mb-2">Zero-Lag Streaming</h4>
+          <p class="text-sm text-neutral-400 leading-relaxed">
+            High throughput content delivery pipelines guarantee immediate frame start without frustrating buffering pauses.
+          </p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 hover:border-voxel-red/60 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-red-950/60 border border-voxel-red/40 flex items-center justify-center text-voxel-crimson text-xl mb-5">
+            <i class="fa-solid fa-mobile-screen"></i>
+          </div>
+          <h4 class="text-lg font-display font-bold text-white mb-2">Multi-Form Adaptability</h4>
+          <p class="text-sm text-neutral-400 leading-relaxed">
+            Smooth transition between desktop widescreen panels and mobile vertical thumb-scrolling with synchronized playlists.
+          </p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 hover:border-voxel-red/60 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-red-950/60 border border-voxel-red/40 flex items-center justify-center text-voxel-crimson text-xl mb-5">
+            <i class="fa-solid fa-film"></i>
+          </div>
+          <h4 class="text-lg font-display font-bold text-white mb-2">Curated Film Library</h4>
+          <p class="text-sm text-neutral-400 leading-relaxed">
+            Freshly indexed blockbusters, classics, indie favorites, and series updated continuously with high resolution posters.
+          </p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 hover:border-voxel-red/60 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-red-950/60 border border-voxel-red/40 flex items-center justify-center text-voxel-crimson text-xl mb-5">
+            <i class="fa-solid fa-expand"></i>
+          </div>
+          <h4 class="text-lg font-display font-bold text-white mb-2">Full-Screen Cinema Mode</h4>
+          <p class="text-sm text-neutral-400 leading-relaxed">
+            One-touch theatre mode hides all distracting browser elements for true edge-to-edge entertainment.
+          </p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 hover:border-voxel-red/60 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-red-950/60 border border-voxel-red/40 flex items-center justify-center text-voxel-crimson text-xl mb-5">
+            <i class="fa-solid fa-shield-virus"></i>
+          </div>
+          <h4 class="text-lg font-display font-bold text-white mb-2">Safe & Ad-Reduced UI</h4>
+          <p class="text-sm text-neutral-400 leading-relaxed">
+            Clean design philosophy prioritizing movie artwork and clean typography over cluttered popups.
+          </p>
+        </div>
+
+        <div class="glass-card rounded-2xl p-6 hover:border-voxel-red/60 transition-all">
+          <div class="w-12 h-12 rounded-xl bg-red-950/60 border border-voxel-red/40 flex items-center justify-center text-voxel-crimson text-xl mb-5">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <h4 class="text-lg font-display font-bold text-white mb-2">Resolution Picker</h4>
+          <p class="text-sm text-neutral-400 leading-relaxed">
+            Support for 4K UHD, 1080p Full HD, and dynamic mobile data-saver modes to match your internet connection.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="mt-auto border-t border-white/10 bg-black/90 py-12 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+        
+        <!-- Logo & Copyright -->
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-600 to-rose-900 flex items-center justify-center font-display font-black text-white text-xs">
+            V
+          </div>
+          <div>
+            <div class="font-display font-bold text-white text-sm">VOXEL MOVIE</div>
+            <div class="text-[11px] text-neutral-500 font-mono">Next-Generation Streaming Portal</div>
+          </div>
+        </div>
+
+        <!-- Links -->
+        <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-neutral-400 font-medium">
+          <a href="https://arjun2526.github.io/voxel-movies/" target="_blank" class="hover:text-voxel-crimson transition-colors">PC Web Client</a>
+          <a href="https://arjun2526.github.io/voxel-movies-MAPP/" target="_blank" class="hover:text-voxel-crimson transition-colors">Mobile MAPP</a>
+          <a href="#apk-download" class="hover:text-voxel-crimson transition-colors">Android Package</a>
+          <button onclick="showQrModal()" class="hover:text-voxel-crimson transition-colors">Mobile QR</button>
+        </div>
+
+        <!-- Tag -->
+        <div class="text-xs text-neutral-500 font-mono">
+          &copy; Voxel Movie Hub. All rights reserved.
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- MODAL: LIVE IFRAME PREVIEW -->
+  <div id="previewModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+    <div class="relative w-full max-w-5xl h-[85vh] bg-neutral-950 rounded-2xl border border-voxel-red/40 flex flex-col shadow-neon-strong overflow-hidden">
+      <!-- Modal Header -->
+      <div class="h-14 bg-neutral-900 border-b border-white/10 px-6 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-3 h-3 rounded-full bg-voxel-red animate-pulse"></div>
+          <span id="previewModalTitle" class="font-display font-bold text-sm text-white">Live App Preview</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <a id="previewExternalLink" href="#" target="_blank" rel="noopener noreferrer" 
+            class="text-xs text-neutral-400 hover:text-white px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 flex items-center gap-1.5">
+            <span>Open in Tab</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          </a>
+          <button onclick="closeLivePreview()" class="text-neutral-400 hover:text-white text-base p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Modal Body (Iframe) -->
+      <div class="relative flex-1 bg-black">
+        <iframe id="previewIframe" src="" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: QR CODE FOR MOBILE SCAN -->
+  <div id="qrModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+    <div class="relative w-full max-w-md bg-neutral-950 rounded-2xl border border-voxel-red/50 p-6 sm:p-8 text-center shadow-neon-strong">
+      <button onclick="closeQrModal()" class="absolute top-4 right-4 text-neutral-400 hover:text-white p-1 rounded-lg">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="w-12 h-12 rounded-xl bg-red-950/60 border border-voxel-red/50 text-voxel-crimson flex items-center justify-center mx-auto mb-4 text-xl">
+        <i class="fa-solid fa-qrcode"></i>
+      </div>
+
+      <h4 class="text-xl font-display font-bold text-white mb-2">Scan to Open on Mobile</h4>
+      <p class="text-xs text-neutral-400 mb-6">Point your phone's camera at this QR code to load the Voxel Movie Mobile MAPP edition directly on your smartphone.</p>
+
+      <div class="bg-white p-4 rounded-xl inline-block shadow-lg mb-6">
+        <div id="qrcodeCanvas"></div>
+      </div>
+
+      <div class="p-3 bg-neutral-900 rounded-xl border border-white/10 text-xs font-mono text-neutral-300 break-all mb-4">
+        https://arjun2526.github.io/voxel-movies-MAPP/
+      </div>
+
+      <button onclick="copyToClipboard('https://arjun2526.github.io/voxel-movies-MAPP/', 'Mobile link copied!')" 
+        class="w-full py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-xs font-semibold text-white border border-white/10 hover:border-voxel-red/40 transition-all flex items-center justify-center gap-2">
+        <i class="fa-regular fa-copy"></i>
+        <span>Copy Mobile URL</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: APK INSTALLATION GUIDE -->
+  <div id="installGuideModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/90 backdrop-blur-xl">
+    <div class="relative w-full max-w-lg bg-neutral-950 rounded-2xl border border-emerald-500/50 p-6 sm:p-8 text-left shadow-2xl">
+      <button onclick="closeInstallGuideModal()" class="absolute top-4 right-4 text-neutral-400 hover:text-white p-1 rounded-lg">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 flex items-center justify-center text-lg">
+          <i class="fa-brands fa-android"></i>
+        </div>
+        <div>
+          <h4 class="text-lg font-display font-bold text-white">How to Install Android APK</h4>
+          <p class="text-xs text-neutral-400">Step-by-step sideloading guide</p>
+        </div>
+      </div>
+
+      <div class="space-y-4 text-xs text-neutral-300 leading-relaxed mb-6">
+        <div class="flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold font-mono shrink-0">1</span>
+          <div>
+            <span class="font-bold text-white block">Download the APK</span>
+            <span>Tap the green <strong class="text-emerald-400">"Download APK File"</strong> button to save <code class="font-mono text-neutral-200">VoxelMovie.apk</code> to your Android Downloads folder.</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold font-mono shrink-0">2</span>
+          <div>
+            <span class="font-bold text-white block">Enable Unknown Sources / Install Unknown Apps</span>
+            <span>When opening the downloaded file, if prompted by Android, choose <em>Settings</em> &rarr; toggle on <em>"Allow from this source"</em> (for Chrome, Files, or your browser).</span>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold font-mono shrink-0">3</span>
+          <div>
+            <span class="font-bold text-white block">Install & Launch</span>
+            <span>Confirm the installation by pressing <em>"Install"</em>. Once completed, tap <em>"Open"</em> to start watching Voxel Movie immediately!</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-white/10 flex items-center justify-end">
+        <button onclick="closeInstallGuideModal()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs">
+          Got It, Thanks!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Copy to clipboard helper
+    function copyToClipboard(text, successMessage) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(successMessage || 'Copied to clipboard!');
+      } catch (err) {
+        showToast('Failed to copy');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    // Toast alert display
+    let toastTimeout;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const msg = document.getElementById('toastMsg');
+      msg.textContent = message;
+
+      clearTimeout(toastTimeout);
+      toast.classList.remove('translate-y-24', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-24', 'opacity-0');
+      }, 3000);
+    }
+
+    // Toggle Preview Playground Mockup (PC vs Mobile)
+    function switchPreviewDevice(device) {
+      const pcMockup = document.getElementById('pcMockup');
+      const mobileMockup = document.getElementById('mobileMockup');
+      const pcBtn = document.getElementById('togglePcBtn');
+      const mobileBtn = document.getElementById('toggleMobileBtn');
+
+      if (device === 'pc') {
+        pcMockup.classList.remove('hidden');
+        mobileMockup.classList.add('hidden');
+
+        pcBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-voxel-red text-white shadow-neon-red';
+        mobileBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-neutral-400 hover:text-white transition-all';
+      } else {
+        pcMockup.classList.add('hidden');
+        mobileMockup.classList.remove('hidden');
+
+        mobileBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-voxel-red text-white shadow-neon-red';
+        pcBtn.className = 'flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-neutral-400 hover:text-white transition-all';
+      }
+    }
+
+    // Live Preview Iframe Modal Handler
+    function openLivePreview(url, title) {
+      const modal = document.getElementById('previewModal');
+      const iframe = document.getElementById('previewIframe');
+      const modalTitle = document.getElementById('previewModalTitle');
+      const externalLink = document.getElementById('previewExternalLink');
+
+      modalTitle.textContent = title || 'Voxel Movie Preview';
+      externalLink.href = url;
+      iframe.src = url;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeLivePreview() {
+      const modal = document.getElementById('previewModal');
+      const iframe = document.getElementById('previewIframe');
+      iframe.src = '';
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // QR Code Modal for Mobile
+    let qrGenerated = false;
+    function showQrModal() {
+      const modal = document.getElementById('qrModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      if (!qrGenerated) {
+        new QRCode(document.getElementById("qrcodeCanvas"), {
+          text: "https://arjun2526.github.io/voxel-movies-MAPP/",
+          width: 170,
+          height: 170,
+          colorDark : "#050507",
+          colorLight : "#ffffff",
+          correctLevel : QRCode.CorrectLevel.H
+        });
+        qrGenerated = true;
+      }
+    }
+
+    function closeQrModal() {
+      const modal = document.getElementById('qrModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Installation Guide Modal
+    function openInstallGuideModal() {
+      const modal = document.getElementById('installGuideModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeInstallGuideModal() {
+      const modal = document.getElementById('installGuideModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Trigger APK Download
+    function triggerApkDownload() {
+      showToast('Initiating VoxelMovie.apk download...');
+      
+      // Creating download anchor for VoxelMovie.apk
+      const downloadLink = document.createElement('a');
+      downloadLink.href = "https://raw.githubusercontent.com/arjun2526/voxel-movies-MAPP/main/VoxelMovie.apk";
+      downloadLink.setAttribute('download', 'VoxelMovie.apk');
+      downloadLink.setAttribute('target', '_blank');
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+
+      setTimeout(() => {
+        showToast('Download started! Check your notification bar.');
+      }, 1200);
+    }
+
+    // Close Modals on ESC key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLivePreview();
+        closeQrModal();
+        closeInstallGuideModal();
+      }
+    });
+  </script>
+</body>
+</html>
